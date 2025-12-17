@@ -1,0 +1,306 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/serenitysz/schema/main/1.0.0.json",
+    "title": "Serenity Configuration",
+    "description": "Serenity configuration to use in the serenity.json file.",
+    "type": "object",
+    "definitions": {
+        "enabledOption": {
+            "default": true,
+            "type": "boolean",
+            "description": "Whether the option(s) is/are enabled or not."
+        },
+        "baserule": {
+            "type": "object",
+            "properties": {
+                "severity": {
+                    "type": "string",
+                    "default": "warn",
+                    "enum": ["off", "info", "warn", "error"],
+                    "description": "The severity of the rule that will be issued for the issue."
+                }
+            },
+            "required": ["severity"]
+        },
+        "pattern-rule": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/baserule"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "pattern": {
+                            "type": "string",
+                            "description": "The pattern (regexp) to use in this rule."
+                        }
+                    }
+                }
+            ]
+        },
+        "max-based-rule": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/baserule"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "max": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "description": "Max size/value for the option."
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "properties": {
+        "extends": {
+            "default": [],
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Array of paths. Serenity will resolve it and extends with the current configuration file."
+        },
+        "go": {
+            "type": "object",
+            "properties": {
+                "exclude": {
+                    "default": [],
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Array of paths to ignore when running checks."
+                },
+                "maxFileSize": {
+                    "default": 0,
+                    "minimum": 0,
+                    "type": "integer",
+                    "description": "Maximum allowed file size in bytes. 0 means unlimited."
+                }
+            },
+            "description": "Go-specific settings for go files."
+        },
+        "performance": {
+            "type": "object",
+            "properties": {
+                "use": {
+                    "$ref": "#/definitions/enabledOption"
+                },
+                "threads": {
+                    "minimum": 1,
+                    "default": 0,
+                    "type": "integer",
+                    "description": "Number of concurrent threads to use. 0 = auto."
+                },
+                "caching": {
+                    "default": true,
+                    "type": "boolean",
+                    "description": "Cache lint results for faster subsequent runs."
+                }
+            },
+            "description": "Performance options."
+        },
+        "assistance": {
+            "type": "object",
+            "properties": {
+                "use": {
+                    "$ref": "#/definitions/enabledOption"
+                },
+                "autofix": {
+                    "default": false,
+                    "type": "boolean",
+                    "description": "Automatically apply fixes when possible."
+                }  
+            },
+            "description": "Editor assistance and hints."
+        },
+        "linter": {
+            "type": "object",
+            "properties": {
+                "use": {
+                    "$ref": "#/definitions/enabledOption"
+                },
+                "issues": {
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "$ref": "#/definitions/enabledOption"
+                        },
+                        "max": {
+                            "minimum": 0,
+                            "default": 15,
+                            "type": "integer",
+                            "description": "Maximum number of issues to report. 0 means unlimited."
+                        }
+                    },
+                    "description": "Linter issues options."
+                },
+                "rules": {
+                    "type": "object",
+                    "properties": {
+                        "recommended": {
+                            "default": true,
+                            "type": "boolean",
+                            "description": "Enable ALL recommended rules for ALL groups."
+                        },
+                        "errors": {
+                            "type": "object",
+                            "properties": {
+                                "use": {
+                                    "$ref": "#/definitions/enabledOption"
+                                },
+                                "noErrorShadowing": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "errorStringFormat": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "errorNotWrapped": {
+                                    "$ref": "#/definitions/baserule"
+                                }
+                            },
+                            "description": "Focused on rules that enforce the best practices to use or handle an error."
+                        },
+                        "imports": {
+                            "type": "object",
+                            "properties": {
+                                "use": {
+                                    "$ref": "#/definitions/enabledOption"
+                                },
+                                "noDotImports": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Avoid any dot-import"
+                                },
+                                "disallowedPackages": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/baserule"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "packages": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "minimum": 1,
+                                                        "type": "string"
+                                                    },
+                                                    "default": [],
+                                                    "minItems": 1
+                                                }
+                                            },
+                                            "required": ["packages"]
+                                        }
+                                    ]
+                                }
+                            },
+                            "description": "Focused on go imports"
+                        },
+                        "bestPractices": {
+                            "type": "object",
+                            "properties": {
+                                "use": {
+                                    "$ref": "#/definitions/enabledOption"
+                                },
+                                "noDeferInLoop": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "useContextInFirstParam": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "noBareReturns": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "noMagicNumbers": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "useSliceCapacity": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "avoisEmptyStructs": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "alwaysPreferConst": {
+                                    "$ref": "#/definitions/baserule"
+                                }
+                            },
+                            "description": "Focused on rules that enforce the best practices of a code"
+                        },
+                        "correctness": {
+                            "type": "object",
+                            "properties": {
+                                "use": {
+                                    "$ref": "#/definitions/enabledOption"
+                                },
+                                "unusedReceiver": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "unusedParams": {
+                                    "$ref": "#/definitions/baserule"
+                                },
+                                "emptyBlock": {
+                                    "$ref": "#/definitions/baserule"
+                                }
+                            },
+                            "description": "Focused on code that is incorrect or useless"
+                        },
+                        "complexity": {
+                            "type": "object",
+                            "properties": {
+                                "use": {
+                                    "$ref": "#/definitions/enabledOption"
+                                },
+                                "maxFuncLines": {
+                                    "$ref": "#/definitions/max-based-rule"
+                                },
+                                "maxNestingDepth": {
+                                    "$ref": "#/definitions/max-based-rule"
+                                },
+                                "cyclomaticComplexity": {
+                                    "$ref": "#/definitions/max-based-rule"
+                                }
+                            },
+                            "description": "Focused on avoid unnecessary code complexity"
+                        },
+                        "naming": {
+                            "type": "object",
+                            "properties": {
+                                "use": {
+                                    "$ref": "#/definitions/enabledOption"
+                                },
+                                "receiverNames": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/baserule"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "maxSize": {
+                                                    "default": 1,
+                                                    "minimum": 1,
+                                                    "type": "integer",
+                                                    "description": "Maximum allowed size for the receiver name"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "exporedIdentifiers": {
+                                    "$ref": "#/definitions/pattern-rule"
+                                },
+                                "importedIdentifiers": {
+                                    "$ref": "#/definitions/pattern-rule"
+                                }
+                            },
+                            "description": "Focused on names or identifier errors"
+                        }
+                    },
+                    "description": "All linting rules grouped by category."
+                }
+            },
+            "description": "Linting options and rules"
+        }
+    }
+}
