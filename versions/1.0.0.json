@@ -91,7 +91,7 @@
                     "minimum": 1,
                     "default": 0,
                     "type": "integer",
-                    "description": "Number of concurrent threads to use. 0 = auto."
+                    "description": "Number of concurrent threads to use. 0 means auto."
                 },
                 "caching": {
                     "default": true,
@@ -111,7 +111,7 @@
                     "default": false,
                     "type": "boolean",
                     "description": "Automatically apply fixes when possible."
-                }  
+                }
             },
             "description": "Editor assistance and hints."
         },
@@ -181,13 +181,13 @@
                                             "type": "object",
                                             "properties": {
                                                 "packages": {
+                                                    "default": [],
+                                                    "minItems": 1,
                                                     "type": "array",
                                                     "items": {
                                                         "minimum": 1,
                                                         "type": "string"
-                                                    },
-                                                    "default": [],
-                                                    "minItems": 1
+                                                    }
                                                 }
                                             },
                                             "required": ["packages"]
@@ -195,7 +195,7 @@
                                     ]
                                 }
                             },
-                            "description": "Focused on go imports"
+                            "description": "Focused on go imports."
                         },
                         "bestPractices": {
                             "type": "object",
@@ -218,14 +218,14 @@
                                 "useSliceCapacity": {
                                     "$ref": "#/definitions/baserule"
                                 },
-                                "avoisEmptyStructs": {
+                                "avoidEmptyStructs": {
                                     "$ref": "#/definitions/baserule"
                                 },
                                 "alwaysPreferConst": {
                                     "$ref": "#/definitions/baserule"
                                 }
                             },
-                            "description": "Focused on rules that enforce the best practices of a code"
+                            "description": "Focused on rules that enforce the best practices of a code."
                         },
                         "correctness": {
                             "type": "object",
@@ -243,7 +243,7 @@
                                     "$ref": "#/definitions/baserule"
                                 }
                             },
-                            "description": "Focused on code that is incorrect or useless"
+                            "description": "Focused on code that is incorrect or useless."
                         },
                         "complexity": {
                             "type": "object",
@@ -261,7 +261,7 @@
                                     "$ref": "#/definitions/max-based-rule"
                                 }
                             },
-                            "description": "Focused on avoid unnecessary code complexity"
+                            "description": "Focused on avoid unnecessary code complexity."
                         },
                         "naming": {
                             "type": "object",
@@ -281,7 +281,7 @@
                                                     "default": 1,
                                                     "minimum": 1,
                                                     "type": "integer",
-                                                    "description": "Maximum allowed size for the receiver name"
+                                                    "description": "Maximum allowed length for the receiver name"
                                                 }
                                             }
                                         }
@@ -300,7 +300,7 @@
                     "description": "All linting rules grouped by category."
                 }
             },
-            "description": "Linting options and rules"
+            "description": "Linting options and rules."
         }
     }
 }
