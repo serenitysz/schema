@@ -1,2 +1,2 @@
-# Used for JSON Schema tests
-serenity.json
+# Adding folder to test JSON Schema versions
+schemas/*.json
