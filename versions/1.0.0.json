@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/serenitysz/schema/main/1.0.0.json",
-    "title": "Serenity Configuration",
+    "title": "Serenity",
     "description": "Serenity configuration to use in the serenity.json file.",
     "type": "object",
     "definitions": {
@@ -60,7 +60,10 @@
         "extends": {
             "default": [],
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+                "minLength": 3,
+                "type": "string"
+            },
             "description": "Array of paths. Serenity will resolve it and extends with the current configuration file."
         },
         "go": {
@@ -69,7 +72,10 @@
                 "exclude": {
                     "default": [],
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                        "minLength": 3,
+                        "type": "string"
+                    },
                     "description": "Array of paths to ignore when running checks."
                 },
                 "maxFileSize": {
@@ -83,12 +89,13 @@
         },
         "performance": {
             "type": "object",
+            "required": ["use"],
             "properties": {
                 "use": {
                     "$ref": "#/definitions/enabledOption"
                 },
                 "threads": {
-                    "minimum": 1,
+                    "minimum": 0,
                     "default": 0,
                     "type": "integer",
                     "description": "Number of concurrent threads to use. 0 means auto."
@@ -103,6 +110,7 @@
         },
         "assistance": {
             "type": "object",
+            "required": ["use"],
             "properties": {
                 "use": {
                     "$ref": "#/definitions/enabledOption"
@@ -117,6 +125,7 @@
         },
         "linter": {
             "type": "object",
+            "required": ["use", "rules"],
             "properties": {
                 "use": {
                     "$ref": "#/definitions/enabledOption"
@@ -134,6 +143,7 @@
                             "description": "Maximum number of issues to report. 0 means unlimited."
                         }
                     },
+                    "required": ["use", "max"],
                     "description": "Linter issues options."
                 },
                 "rules": {
@@ -146,31 +156,36 @@
                         },
                         "errors": {
                             "type": "object",
+                            "required": ["use"],
                             "properties": {
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
                                 },
                                 "noErrorShadowing": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Disallow shadowing of error variables, which can hide failures and lead to subtle bugs."
                                 },
                                 "errorStringFormat": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Enforce Go error string conventions, such as lowercase messages without punctuation or formatting."
                                 },
                                 "errorNotWrapped": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Ensure returned errors are properly wrapped when propagating them, preserving context and enabling error inspection."
                                 }
                             },
                             "description": "Focused on rules that enforce the best practices to use or handle an error."
                         },
                         "imports": {
                             "type": "object",
+                            "required": ["use"],
                             "properties": {
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
                                 },
                                 "noDotImports": {
                                     "$ref": "#/definitions/baserule",
-                                    "description": "Avoid any dot-import"
+                                    "description": "Disallow dot-imports (import . \"pkg\"), which pollute the local namespace and make code harder to read, reason about, and refactor."
                                 },
                                 "disallowedPackages": {
                                     "allOf": [
@@ -186,85 +201,105 @@
                                                     "type": "array",
                                                     "items": {
                                                         "minimum": 1,
+                                                        "minLength": 1,
                                                         "type": "string"
-                                                    }
+                                                    },
+                                                    "description": "Array of packages path name (e.g. \"math\")."
                                                 }
                                             },
                                             "required": ["packages"]
                                         }
-                                    ]
+                                    ],
+                                    "description": "Disallow the usage of specific packages defined in the packages array. This rule checks only the import path, ignoring aliases."
                                 }
                             },
                             "description": "Focused on go imports."
                         },
                         "bestPractices": {
                             "type": "object",
+                            "required": ["use"],
                             "properties": {
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
                                 },
                                 "noDeferInLoop": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Prevent the use of \"defer\" keyword inside loops, which can lead to excessive memory usage and unexpected execution order."
                                 },
                                 "useContextInFirstParam": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Enforce \"context.Context\" to be the first parameter of functions and methods that accept a context, following Go conventions."
                                 },
                                 "noBareReturns": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Disallow bare return statements in functions with named return values, improving readability and reducing hidden control flow."
                                 },
                                 "noMagicNumbers": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Discourage the use of unexplained numeric literals, encouraging named constants to improve clarity and maintainability."
                                 },
                                 "useSliceCapacity": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Encourage explicit slice capacity initialization when the final size is known, improving performance and reducing allocations."
                                 },
                                 "avoidEmptyStructs": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Prevent the use of empty structs where they provide no semantic or performance benefit."
                                 },
                                 "alwaysPreferConst": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Prefer \"const\" over \"var\" when a value is immutable, improving safety and intent clarity."
                                 }
                             },
                             "description": "Focused on rules that enforce the best practices of a code."
                         },
                         "correctness": {
                             "type": "object",
+                            "required": ["use"],
                             "properties": {
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
                                 },
                                 "unusedReceiver": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Detect methods whose receiver is never used, indicating unnecessary method definitions or incorrect design."
                                 },
                                 "unusedParams": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Detect function or method parameters that are never used, reducing noise and potential confusion."
                                 },
                                 "emptyBlock": {
-                                    "$ref": "#/definitions/baserule"
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Detect empty code blocks (e.g. if, for, switch) that have no effect and likely indicate unfinished or dead code."
                                 }
                             },
                             "description": "Focused on code that is incorrect or useless."
                         },
                         "complexity": {
                             "type": "object",
+                            "required": ["use"],
                             "properties": {
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
                                 },
                                 "maxFuncLines": {
-                                    "$ref": "#/definitions/max-based-rule"
+                                    "$ref": "#/definitions/max-based-rule",
+                                    "description": "Limit the maximum number of lines per function to encourage smaller, more focused units of code."
                                 },
                                 "maxNestingDepth": {
-                                    "$ref": "#/definitions/max-based-rule"
+                                    "$ref": "#/definitions/max-based-rule",
+                                    "description": "Restrict excessive nesting of control structures to improve readability and reduce cognitive load."
                                 },
                                 "cyclomaticComplexity": {
-                                    "$ref": "#/definitions/max-based-rule"
+                                    "$ref": "#/definitions/max-based-rule",
+                                    "description": "Enforce an upper bound on cyclomatic complexity to prevent overly complex and hard-to-test logic."
                                 }
                             },
                             "description": "Focused on avoid unnecessary code complexity."
                         },
                         "naming": {
                             "type": "object",
+                            "required": ["use"],
                             "properties": {
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
@@ -281,20 +316,23 @@
                                                     "default": 1,
                                                     "minimum": 1,
                                                     "type": "integer",
-                                                    "description": "Maximum allowed length for the receiver name"
+                                                    "description": "Maximum allowed length for the receiver name."
                                                 }
                                             }
                                         }
-                                    ]
+                                    ],
+                                    "description": "Enforce short and consistent receiver names by limiting their maximum length. Helps keep method signatures readable and idiomatic."
                                 },
-                                "exporedIdentifiers": {
-                                    "$ref": "#/definitions/pattern-rule"
+                                "exportedIdentifiers": {
+                                    "$ref": "#/definitions/pattern-rule",
+                                    "description": "Enforce a naming pattern for exported identifiers, ensuring consistency, clarity, and adherence to project conventions."
                                 },
                                 "importedIdentifiers": {
-                                    "$ref": "#/definitions/pattern-rule"
+                                    "$ref": "#/definitions/pattern-rule",
+                                    "description": "Enforce a naming pattern for imported identifiers and aliases, preventing unclear or misleading names."
                                 }
                             },
-                            "description": "Focused on names or identifier errors"
+                            "description": "Focused on names or identifier errors."
                         }
                     },
                     "description": "All linting rules grouped by category."
@@ -302,5 +340,6 @@
             },
             "description": "Linting options and rules."
         }
-    }
+    },
+    "required": ["linter"]
 }
