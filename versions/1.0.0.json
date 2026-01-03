@@ -183,6 +183,10 @@
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
                                 },
+                                "redundantImportAlias": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Detect import aliases that repeat the package name unnecessarily."
+                                },
                                 "noDotImports": {
                                     "$ref": "#/definitions/baserule",
                                     "description": "Disallow dot-imports (import . \"pkg\"), which pollute the local namespace and make code harder to read, reason about, and refactor."
@@ -221,6 +225,22 @@
                             "properties": {
                                 "use": {
                                     "$ref": "#/definitions/enabledOption"
+                                },
+                                "simplifyBooleanReturn": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Detect unnecessary if-else statements that return or assign boolean values and suggest a direct return or assignment for clearer, more idiomatic code."
+                                },
+                                "getMustReturnValue": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Enforce that functions prefixed with Get return at least one non-error value, aligning with common Go naming expectations."
+                                },
+                                "preferEarlyReturn": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Encourage early returns to reduce nesting and improve code readability, avoiding unnecessary if-else blocks."
+                                },
+                                "redundantErrorCheck": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Detect redundant if statements that check an error only to immediately return it, encouraging more direct and idiomatic returns."
                                 },
                                 "noDeferInLoop": {
                                     "$ref": "#/definitions/baserule",
@@ -271,6 +291,29 @@
                                 "emptyBlock": {
                                     "$ref": "#/definitions/baserule",
                                     "description": "Detect empty code blocks (e.g. if, for, switch) that have no effect and likely indicate unfinished or dead code."
+                                },
+                                "boolLiteralExpressions": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Prevent the use of boolean literals in logic expressions that make the code less readable."
+                                },
+                                "ambiguousReturns": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/baserule"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "maxUnnamedSameType": {
+                                                    "default": 1,
+                                                    "minimum": 1,
+                                                    "type": "integer",
+                                                    "description": "Maximum number of unnamed return values of the same type allowed."
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "description": "Detect functions or methods that return multiple unnamed values of the same type, which can easily lead to misordered assignments and subtle bugs."
                                 }
                             },
                             "description": "Focused on code that is incorrect or useless."
@@ -297,6 +340,84 @@
                             },
                             "description": "Focused on avoid unnecessary code complexity."
                         },
+                        "style": {
+                            "type": "object",
+                            "required": ["use"],
+                            "properties": {
+                                "use": {
+                                    "$ref": "#/definitions/enabledOption"
+                                },
+                                "preferIncDec": {
+                                    "$ref": "#/definitions/baserule",
+                                    "description": "Prefer the ++ and -- operators over += 1 and -= 1 for clearer and more idiomatic code."
+                                },
+                                "maxLineLength": {
+                                    "$ref": "#/definitions/max-based-rule",
+                                    "description": "Warn when lines exceed a configured maximum length, helping maintain readability and consistent formatting."
+                                },
+                                "packageComments": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/baserule"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "requireTopOfFile": {
+                                                    "default": true,
+                                                    "type": "boolean",
+                                                    "description": "Require the package comment to appear immediately before the package declaration."
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "description": "Ensure packages are properly documented with comments attached to the package declaration."
+                                },
+                                "commentSpacing": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/baserule"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "exceptions": {
+                                                    "default": [],
+                                                    "type": "array",
+                                                    "items": { "type": "string" },
+                                                    "description": "List of comment prefixes allowed without a space after //."
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "description": "Enforce a space after comment markers (//) to improve readability and follow Go style conventions."
+                                },
+                                "fileHeader": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/baserule"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "header": {
+                                                    "type": "string",
+                                                    "description": "Required file header content."
+                                                },
+                                                "allowShebang": {
+                                                    "type": "boolean",
+                                                    "default": true,
+                                                    "description": "Allow shebang lines before the header."
+                                                }
+                                            },
+                                            "required": ["header"]
+                                        }
+                                    ],
+                                    "description": "Ensure all source files contain a standardized header, improving consistency and meeting legal or organizational requirements."
+                                }
+                            },
+                            "description": "Focused on code style."
+                        },
                         "naming": {
                             "type": "object",
                             "required": ["use"],
@@ -318,7 +439,8 @@
                                                     "type": "integer",
                                                     "description": "Maximum allowed length for the receiver name."
                                                 }
-                                            }
+                                            },
+                                            "required": ["maxSize"]
                                         }
                                     ],
                                     "description": "Enforce short and consistent receiver names by limiting their maximum length. Helps keep method signatures readable and idiomatic."
@@ -330,6 +452,29 @@
                                 "importedIdentifiers": {
                                     "$ref": "#/definitions/pattern-rule",
                                     "description": "Enforce a naming pattern for imported identifiers and aliases, preventing unclear or misleading names."
+                                },
+                                "bannedChars": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/baserule"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "chars": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "minLength": 1,
+                                                        "type": "string"
+                                                    },
+                                                    "minItems": 1,
+                                                    "description": "Array of characteres that are banned in identifiers (Min 1.)"
+                                                }
+                                            },
+                                            "required": ["chars"]
+                                        }
+                                    ],
+                                    "description": "Control the banned characteres in identifiers (func, var, const). Comments are not supported."
                                 }
                             },
                             "description": "Focused on names or identifier errors."
