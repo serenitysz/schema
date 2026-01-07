@@ -66,6 +66,43 @@
             },
             "description": "Array of paths. Serenity will resolve it and extends with the current configuration file."
         },
+        "git": {
+            "type": "object",
+            "required": ["use"],
+            "properties": {
+                "use": {
+                    "$ref": "#/definitions/enabledOption"
+                },
+                "ignore": {
+                    "default": true,
+                    "type": "boolean",
+                    "description": "Whether Serenity should respect .gitignore files (Including nested ones)."
+                },
+                "changedOnly": {
+                    "default": false,
+                    "type": "boolean",
+                    "description": "Run checks only on files changed compared to the base branch."
+                },
+                "stagedOnly": {
+                    "default": false,
+                    "type": "boolean",
+                    "description": "Run checks only on staged files (useful for pre-commit hooks)."
+                },
+                "branch": {
+                    "minLength": 1,
+                    "type": "string",
+                    "default": "main",
+                    "description": "Base branch used to determine changed files when changedOnly is enabled."
+                },
+                "root": {
+                    "minLength": 1,
+                    "type": "string",
+                    "description": "Root directory where Serenity should look for the Git repository. Defaults to the configuration file directory."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Git integration settings. When enabled, Serenity can respect .gitignore files and limit checks to changed or staged files."
+        },
         "go": {
             "type": "object",
             "properties": {
